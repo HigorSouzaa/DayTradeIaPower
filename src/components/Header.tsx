@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Menu, X, TrendingUp } from 'lucide-react';
+import { Menu, X, TrendingUp, User, LogOut } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface HeaderProps {
   onAuthClick: (mode: 'login' | 'register') => void;
@@ -7,6 +8,11 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onAuthClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <header className="fixed top-0 w-full bg-black/90 backdrop-blur-md border-b border-purple-600/20 z-50">
@@ -39,20 +45,36 @@ const Header: React.FC<HeaderProps> = ({ onAuthClick }) => {
           </nav>
 
           {/* Auth Buttons - Desktop */}
-          <div className="hidden md:flex space-x-4">
-            <button 
-              onClick={() => onAuthClick('login')}
-              className="px-4 py-2 text-purple-400 border border-purple-600 rounded-lg hover:bg-purple-600/10 transition-all"
-            >
-              Entrar
-            </button>
-            <button 
-              onClick={() => onAuthClick('register')}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all transform hover:scale-105"
-            >
-              Cadastrar
-            </button>
-          </div>
+          {user ? (
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-gray-300">
+                <User className="w-4 h-4" />
+                <span className="text-sm">{profile?.full_name || user.email}</span>
+              </div>
+              <button 
+                onClick={handleSignOut}
+                className="flex items-center px-4 py-2 text-red-400 border border-red-600 rounded-lg hover:bg-red-600/10 transition-all"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </button>
+            </div>
+          ) : (
+            <div className="hidden md:flex space-x-4">
+              <button 
+                onClick={() => onAuthClick('login')}
+                className="px-4 py-2 text-purple-400 border border-purple-600 rounded-lg hover:bg-purple-600/10 transition-all"
+              >
+                Entrar
+              </button>
+              <button 
+                onClick={() => onAuthClick('register')}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all transform hover:scale-105"
+              >
+                Cadastrar
+              </button>
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button
@@ -79,20 +101,36 @@ const Header: React.FC<HeaderProps> = ({ onAuthClick }) => {
               <a href="#rankings" className="text-gray-300 hover:text-purple-400 transition-colors">
                 Rankings
               </a>
-              <div className="flex flex-col space-y-2 pt-4">
-                <button 
-                  onClick={() => onAuthClick('login')}
-                  className="px-4 py-2 text-purple-400 border border-purple-600 rounded-lg hover:bg-purple-600/10 transition-all"
-                >
-                  Entrar
-                </button>
-                <button 
-                  onClick={() => onAuthClick('register')}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all"
-                >
-                  Cadastrar
-                </button>
-              </div>
+              {user ? (
+                <div className="flex flex-col space-y-2 pt-4">
+                  <div className="flex items-center space-x-2 text-gray-300 px-4 py-2">
+                    <User className="w-4 h-4" />
+                    <span className="text-sm">{profile?.full_name || user.email}</span>
+                  </div>
+                  <button 
+                    onClick={handleSignOut}
+                    className="flex items-center px-4 py-2 text-red-400 border border-red-600 rounded-lg hover:bg-red-600/10 transition-all"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col space-y-2 pt-4">
+                  <button 
+                    onClick={() => onAuthClick('login')}
+                    className="px-4 py-2 text-purple-400 border border-purple-600 rounded-lg hover:bg-purple-600/10 transition-all"
+                  >
+                    Entrar
+                  </button>
+                  <button 
+                    onClick={() => onAuthClick('register')}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all"
+                  >
+                    Cadastrar
+                  </button>
+                </div>
+              )}
             </nav>
           </div>
         )}

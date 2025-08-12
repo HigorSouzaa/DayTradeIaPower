@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, setMode }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,12 +20,43 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, setMode })
     confirmPassword: ''
   });
 
+  const { signUp, signIn } = useAuth();
+
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (mode === 'register') {
+        if (formData.password !== formData.confirmPassword) {
+          setError('As senhas não coincidem');
+          return;
+        }
+
+        const { error } = await signUp(formData.email, formData.password, formData.name);
+        if (error) {
+          setError(error.message);
+        } else {
+          onClose();
+          // Show success message
+          alert('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
+        }
+      } else {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          setError('E-mail ou senha incorretos');
+        } else {
+          onClose();
+        }
+      }
+    } catch (err) {
+      setError('Ocorreu um erro. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +89,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, setMode })
             }
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-red-400 text-sm">{error}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {mode === 'register' && (
@@ -142,9 +182,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, setMode })
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg font-semibold text-white hover:from-purple-700 hover:to-purple-800 transition-all transform hover:scale-[1.02]"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg font-semibold text-white hover:from-purple-700 hover:to-purple-800 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {mode === 'login' ? 'Entrar' : 'Criar Conta'}
+            {loading ? 'Carregando...' : (mode === 'login' ? 'Entrar' : 'Criar Conta')}
           </button>
         </form>
 

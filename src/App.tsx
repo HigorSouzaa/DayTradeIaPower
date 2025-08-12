@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from './hooks/useAuth';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import HowItWorks from './components/HowItWorks';
@@ -7,6 +8,7 @@ import Simulator from './components/Simulator';
 import Gamification from './components/Gamification';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
+import UserDashboard from './components/UserDashboard';
 import TermsOfService from './components/TermsOfService';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import RiskPolicy from './components/RiskPolicy';
@@ -19,6 +21,7 @@ import TechnicalSupport from './components/TechnicalSupport';
 type PageType = 'home' | 'terms' | 'privacy' | 'risks' | 'regulation' | 'help' | 'faq' | 'contact' | 'support';
 
 function App() {
+  const { user, loading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [currentPage, setCurrentPage] = useState<PageType>('home');
@@ -35,6 +38,23 @@ function App() {
   const backToHome = () => {
     setCurrentPage('home');
   };
+
+  // Show loading screen while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-300">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is logged in, show user dashboard
+  if (user && currentPage === 'home') {
+    return <UserDashboard />;
+  }
 
   // Render different pages based on currentPage state
   if (currentPage === 'terms') {
