@@ -1,12 +1,35 @@
 import { useState, useEffect } from 'react';
-import { supabase, Investment, Operation } from '../lib/supabase';
 import { useAuth } from './useAuth';
+
+// Types
+export interface Investment {
+  id: string;
+  user_id: string;
+  amount: number;
+  risk_level: 'low' | 'medium' | 'high';
+  daily_return: number;
+  total_return: number;
+  status: 'active' | 'paused' | 'closed';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Operation {
+  id: string;
+  investment_id: string;
+  operation_type: 'buy' | 'sell';
+  stock_symbol: string;
+  quantity: number;
+  price: number;
+  result: number;
+  executed_at: string;
+}
 
 export const useInvestments = () => {
   const { user } = useAuth();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [operations, setOperations] = useState<Operation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -22,87 +45,98 @@ export const useInvestments = () => {
   const fetchInvestments = async () => {
     if (!user) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('investments')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching investments:', error);
-      } else {
-        setInvestments(data || []);
+    setLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Mock data
+    const mockInvestments: Investment[] = [
+      {
+        id: '1',
+        user_id: user.id,
+        amount: 1000,
+        risk_level: 'medium',
+        daily_return: 16,
+        total_return: 150,
+        status: 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
-    } catch (error) {
-      console.error('Error fetching investments:', error);
-    }
+    ];
+    
+    setInvestments(mockInvestments);
+    setLoading(false);
   };
 
   const fetchOperations = async () => {
     if (!user) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('operations')
-        .select(`
-          *,
-          investments!inner(user_id)
-        `)
-        .eq('investments.user_id', user.id)
-        .order('executed_at', { ascending: false })
-        .limit(20);
-
-      if (error) {
-        console.error('Error fetching operations:', error);
-      } else {
-        setOperations(data || []);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Mock data
+    const mockOperations: Operation[] = [
+      {
+        id: '1',
+        investment_id: '1',
+        operation_type: 'buy',
+        stock_symbol: 'PETR4',
+        quantity: 100,
+        price: 25.50,
+        result: 150.00,
+        executed_at: new Date().toISOString()
+      },
+      {
+        id: '2',
+        investment_id: '1',
+        operation_type: 'sell',
+        stock_symbol: 'VALE3',
+        quantity: 50,
+        price: 45.20,
+        result: -25.00,
+        executed_at: new Date(Date.now() - 3600000).toISOString()
       }
-    } catch (error) {
-      console.error('Error fetching operations:', error);
-    } finally {
-      setLoading(false);
-    }
+    ];
+    
+    setOperations(mockOperations);
   };
 
   const createInvestment = async (amount: number, riskLevel: 'low' | 'medium' | 'high') => {
     if (!user) return { error: new Error('No user logged in') };
 
-    const { data, error } = await supabase
-      .from('investments')
-      .insert({
-        user_id: user.id,
-        amount,
-        risk_level: riskLevel,
-        daily_return: 0,
-        total_return: 0,
-        status: 'active',
-      })
-      .select()
-      .single();
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (!error && data) {
-      setInvestments(prev => [data, ...prev]);
-    }
+    const newInvestment: Investment = {
+      id: Date.now().toString(),
+      user_id: user.id,
+      amount,
+      risk_level: riskLevel,
+      daily_return: 0,
+      total_return: 0,
+      status: 'active',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-    return { data, error };
+    setInvestments(prev => [newInvestment, ...prev]);
+
+    return { data: newInvestment, error: null };
   };
 
   const updateInvestment = async (id: string, updates: Partial<Investment>) => {
-    const { data, error } = await supabase
-      .from('investments')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (!error && data) {
-      setInvestments(prev => 
-        prev.map(inv => inv.id === id ? data : inv)
-      );
-    }
+    const updatedInvestment = investments.find(inv => inv.id === id);
+    if (!updatedInvestment) return { data: null, error: new Error('Investment not found') };
 
-    return { data, error };
+    const updated = { ...updatedInvestment, ...updates };
+    setInvestments(prev => 
+      prev.map(inv => inv.id === id ? updated : inv)
+    );
+
+    return { data: updated, error: null };
   };
 
   const getTotalBalance = () => {

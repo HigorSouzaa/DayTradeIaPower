@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   mode: 'login' | 'register';
   setMode: (mode: 'login' | 'register') => void;
+  onAuthSuccess?: (user: any) => void;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, setMode }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, setMode, onAuthSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,8 +20,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, setMode })
     confirmPassword: ''
   });
 
-  const { signUp, signIn } = useAuth();
-
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,27 +28,35 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, setMode })
     setError(null);
 
     try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       if (mode === 'register') {
         if (formData.password !== formData.confirmPassword) {
           setError('As senhas não coincidem');
           return;
         }
 
-        const { error } = await signUp(formData.email, formData.password, formData.name);
-        if (error) {
-          setError(error.message);
-        } else {
-          onClose();
-          // Show success message
-          alert('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
-        }
+        // Mock successful registration
+        const mockUser = {
+          id: 'mock-user-id',
+          email: formData.email,
+          name: formData.name
+        };
+        
+        onClose();
+        onAuthSuccess?.(mockUser);
+        alert('Conta criada com sucesso! Bem-vindo ao TradeAI Pro!');
       } else {
-        const { error } = await signIn(formData.email, formData.password);
-        if (error) {
-          setError('E-mail ou senha incorretos');
-        } else {
-          onClose();
-        }
+        // Mock successful login
+        const mockUser = {
+          id: 'mock-user-id',
+          email: formData.email,
+          name: 'Usuário Demo'
+        };
+        
+        onClose();
+        onAuthSuccess?.(mockUser);
       }
     } catch (err) {
       setError('Ocorreu um erro. Tente novamente.');

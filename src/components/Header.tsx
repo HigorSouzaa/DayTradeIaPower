@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Menu, X, TrendingUp, User, LogOut } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
 
 interface HeaderProps {
   onAuthClick: (mode: 'login' | 'register') => void;
+  user?: any;
+  onSignOut?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onAuthClick }) => {
+const Header: React.FC<HeaderProps> = ({ onAuthClick, user, onSignOut }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, profile, signOut } = useAuth();
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    onSignOut?.();
   };
 
   return (
@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ onAuthClick }) => {
             <div className="hidden md:flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-gray-300">
                 <User className="w-4 h-4" />
-                <span className="text-sm">{profile?.full_name || user.email}</span>
+                <span className="text-sm">{user?.name || user?.email}</span>
               </div>
               <button 
                 onClick={handleSignOut}
@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({ onAuthClick }) => {
                 <div className="flex flex-col space-y-2 pt-4">
                   <div className="flex items-center space-x-2 text-gray-300 px-4 py-2">
                     <User className="w-4 h-4" />
-                    <span className="text-sm">{profile?.full_name || user.email}</span>
+                    <span className="text-sm">{user?.name || user?.email}</span>
                   </div>
                   <button 
                     onClick={handleSignOut}

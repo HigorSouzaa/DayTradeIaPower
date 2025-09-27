@@ -15,7 +15,11 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { useInvestments } from '../hooks/useInvestments';
 
-const UserDashboard: React.FC = () => {
+interface UserDashboardProps {
+  user?: any;
+}
+
+const UserDashboard: React.FC<UserDashboardProps> = ({ user }) => {
   const { profile } = useAuth();
   const { 
     investments, 
@@ -69,7 +73,7 @@ const UserDashboard: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">
-              Olá, {profile?.full_name?.split(' ')[0] || 'Trader'}! 👋
+              Olá, {user?.name?.split(' ')[0] || profile?.full_name?.split(' ')[0] || 'Trader'}! 👋
             </h1>
             <p className="text-gray-300">Acompanhe seus investimentos e operações em tempo real</p>
           </div>

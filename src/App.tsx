@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from './hooks/useAuth';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import HowItWorks from './components/HowItWorks';
@@ -21,7 +20,8 @@ import TechnicalSupport from './components/TechnicalSupport';
 type PageType = 'home' | 'terms' | 'privacy' | 'risks' | 'regulation' | 'help' | 'faq' | 'contact' | 'support';
 
 function App() {
-  const { user, loading } = useAuth();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [currentPage, setCurrentPage] = useState<PageType>('home');
@@ -39,6 +39,14 @@ function App() {
     setCurrentPage('home');
   };
 
+  const handleAuthSuccess = (user: any) => {
+    setUser(user);
+  };
+
+  const handleSignOut = () => {
+    setUser(null);
+  };
+
   // Show loading screen while checking authentication
   if (loading) {
     return (
@@ -53,7 +61,7 @@ function App() {
 
   // If user is logged in, show user dashboard
   if (user && currentPage === 'home') {
-    return <UserDashboard />;
+    return <UserDashboard user={user} />;
   }
 
   // Render different pages based on currentPage state
@@ -92,7 +100,11 @@ function App() {
   // Home page
   return (
     <div className="min-h-screen bg-black text-white">
-      <Header onAuthClick={openAuthModal} />
+      <Header 
+        onAuthClick={openAuthModal} 
+        user={user}
+        onSignOut={handleSignOut}
+      />
       <Hero onGetStarted={() => openAuthModal('register')} />
       <HowItWorks />
       <Dashboard />
@@ -104,6 +116,7 @@ function App() {
         onClose={() => setIsAuthModalOpen(false)}
         mode={authMode}
         setMode={setAuthMode}
+        onAuthSuccess={handleAuthSuccess}
       />
     </div>
   );
